@@ -19,3 +19,9 @@ This is based on tutorials from Ashwani Kumar et al. [tutorial](https://www.yout
 
     **---> Validation Loss: 4.055375133241926 after training for 3 epoch(s)**
 
+2. Exp.2
+    + Epochs: 1
+    + Learning rate: 3e-5 ---> 1e-5 (Cosine Annealing LR)
+
+    **---> Validation Loss: 3.8983952403068542 after training for 1 epoch(s)**
+
