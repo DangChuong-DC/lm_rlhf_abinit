@@ -1,0 +1,43 @@
+[project]
+name = "lm-rlhf-abinit"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "DC", email = "dan.anh.chuong@woven-planet.global" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "datasets[torch]>=5.0.0",
+    "loguru>=0.7.3",
+    "torch>=2.11.0",
+    "torchvision>=0.26.0",
+    "transformers[torch]>=5.12.1",
+]
+
+[project.scripts]
+lm-rlhf-abinit = "lm_rlhf_abinit:main"
+
+[build-system]
+requires = ["uv_build>=0.11.22,<0.12.0"]
+build-backend = "uv_build"
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cpu", marker = "sys_platform != 'linux'" },
+  { index = "pytorch-cu126", marker = "sys_platform == 'linux'" },
+]
+torchvision = [
+  { index = "pytorch-cpu", marker = "sys_platform != 'linux'" },
+  { index = "pytorch-cu126", marker = "sys_platform == 'linux'" },
+]
