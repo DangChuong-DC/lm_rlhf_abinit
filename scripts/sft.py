@@ -138,7 +138,11 @@ def main() -> None:
     # Prepare for training loop
     optimizer = AdamW(lang_model.parameters(), lr=TRAINING_CONFIG["learning_rate"])
     num_epochs = TRAINING_CONFIG["num_epochs"]
-    scheduler = CosineAnnealingLR(optimizer, T_max=num_epochs*len(train_loader))
+    scheduler = CosineAnnealingLR(
+        optimizer, 
+        T_max=num_epochs*len(train_loader),
+        eta_min=TRAINING_CONFIG["min_lr"],
+    )
 
     _device = "cuda:3" if torch.cuda.is_available() else "cpu"
     lang_model.to(_device)

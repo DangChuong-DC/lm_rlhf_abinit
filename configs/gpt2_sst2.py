@@ -12,6 +12,7 @@ SFT_TRAIN_CONFIG = dict(
     batch_size = 32,
     num_epochs = 1,
     learning_rate = 3e-5,
+    min_lr = 1e-5,
     log_interval = 100,
     save_dir = "/home/dc/self_studies/nvda_preps/lm_rlhf_abinit/pretraineds/",
     new_model_name = "gpt2_sst2_sft",
