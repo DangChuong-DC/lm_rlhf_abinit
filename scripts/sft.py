@@ -10,12 +10,12 @@ from transformers import (
     AutoTokenizer,
     DataCollatorForLanguageModeling
 )
-from datasets import load_dataset
 from loguru import logger
 from tqdm import tqdm
 
+from lm_rlhf_abinit.datasets.hf_dsets import get_hf_dataset
 from lm_rlhf_abinit.utils.config import load_python_config
-from lm_rlhf_abinit.utils.tokenization import tokenize_ds
+from lm_rlhf_abinit.utils.tokenization import tokenize_sft_ds
 
 ### CONFIGURATIONS
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -77,43 +77,28 @@ def main() -> None:
         lang_model.config.pad_token_id = tokenizer.pad_token_id
 
     # load dataset
-    dataset = load_dataset(
-        DATASET_CONFIG["dataset_name"],
-        cache_dir=DATASET_CONFIG["dataset_cache_dir"],
-    )
-    ds_train, ds_val = dataset["train"], dataset["validation"]
-
     ## intialize the tokenizer function as partial function so that 
     ## we can pass it to the map function of the HF dataset
     tokenize_fn = partial(
-        tokenize_ds,
+        tokenize_sft_ds,
         tokenizer=tokenizer,
     )
 
-    map_kwargs = dict(
+    mapping_kwargs = dict(
         batched=True,
         batch_size=512,
         remove_columns=['idx', 'sentence', 'label'],
     )
-    ds_train = ds_train.map(
-        tokenize_fn,
-        **map_kwargs,
-    )
-    ds_val = ds_val.map(
-        tokenize_fn,
-        **map_kwargs,
-    )
 
-    ### filter out samples with length less than MIN_LENGTH tokens
-    ds_train = ds_train.filter(
-        lambda x: len(x['input_ids']) >= DATASET_CONFIG["min_sequence_length"]
+    ds_dict = get_hf_dataset(
+        ds_name=DATASET_CONFIG["dataset_name"],
+        ds_cache_dir=DATASET_CONFIG["dataset_cache_dir"],
+        tokenize_fn=tokenize_fn,
+        mapping_kwargs=mapping_kwargs,
+        filter_fn=lambda x: len(x['input_ids']) >= DATASET_CONFIG["min_sequence_length"],
+        format='torch',
     )
-    ds_val = ds_val.filter(
-        lambda x: len(x['input_ids']) >= DATASET_CONFIG["min_sequence_length"]
-    )
-    ### set dataset format to PyTorch tensors
-    ds_train.set_format(type='torch')
-    ds_val.set_format(type='torch')
+    ds_train, ds_val = ds_dict["train"], ds_dict["validation"]
 
     # prepare the dataloaders
     ## define the collate function to pad the sequences in the batch
